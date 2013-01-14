@@ -25,9 +25,21 @@ Razorblade _may not_ be for you if you experience any of the following symptoms:
 
 ## Usage
 
-Not recommended just yet.
+Not recommended just yet. The bold may proceed, however.
 
 All functions are built to return a map of _:text_ and _:params_. Arguments can be virtually anything and will be coerced as appropriate.
+
+In your project.clj:
+```clj
+  [razorblade "0.1.0-SNAPSHOT"]
+```
+
+```clj
+; all examples below assume a setup like so
+(ns my.cool.app
+  (:use [razorblade.core :only [select from where join prefix combine-clauses]])
+  (:require [razorblade.op :as op]))
+```
 
 ```clj
 ; building simple queries is straightforward.
@@ -100,6 +112,19 @@ All functions are built to return a map of _:text_ and _:params_. Arguments can 
 
 ; and of course you can always pass in your own. The above is equivalent to
 (exec {:text "select name from from dingos" :params []})
+```
+
+```clj
+; you can build your own operators too. It's perhaps a bit awkward right now, though (patches welcome - much is missing)
+
+(defn cast [field-clause as-clause]
+  (combine-clauses ["CAST"
+                    (combine-clauses [field-clause as-clause]
+                                     :join-str " AS "
+                                     :wrap-parens true)]
+                   :join-str ""))
+; (cast :foo "int") yields
+{:text "CAST(foo AS int)" :params []}
 ```
 
 ```clj
