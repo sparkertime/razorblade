@@ -30,7 +30,7 @@ All functions are built to return a map of _:text_ and _:params_. Arguments can 
 ; building simple queries is straightforward.
 (select :name (from :dingos))
 ;yields
-{:text "select name from from dingos" :params []}
+{:text "select name from dingos" :params []}
 ```
 
 ```clj
