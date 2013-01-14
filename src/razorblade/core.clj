@@ -2,7 +2,7 @@
   (:require [clojure.java.jdbc :as sql]
             [clojure.string :as string]))
 
-(def db "postgres://localhost/razor-test")
+(def ^{:dynamic true} *db* "postgres://localhost/razor-test")
 
 (declare combine-clauses)
 
@@ -60,7 +60,7 @@
     (map #(update-in % [:text] (partial str (name prefix) ".")))))
 
 (defn exec [query]
-  (clojure.java.jdbc/with-connection db
+  (clojure.java.jdbc/with-connection *db*
     (clojure.java.jdbc/with-query-results rows
       (vec (cons (:text query) (:params query)))
       (doall rows))))
