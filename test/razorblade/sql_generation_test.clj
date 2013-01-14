@@ -15,6 +15,7 @@
                            (op/and
                              "dingo_facts.created_at > (NOW() - INTERVAL '1 DAY')"
                              (op/> :dingo-facts.updated-at "NOW() - INTERVAL '1 DAY'")
+                             (when false "you should not see this")
                              (op/> :dingo-facts.last-seen-at (op/- "now()" "INTERVAL '1 DAY')"))
                              (op/= :dingo-facts.user-id (:id user))
                              (op/in :dingo-facts.category excluded-categories))

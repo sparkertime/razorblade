@@ -21,6 +21,7 @@
     (coll? v)    (combine-clauses v :wrap-parens true :join-str ",")
     (keyword? v) {:text (fieldify v)
                   :params []}
+    (nil? v)     nil
     :else        {:text (str v)
                   :params []}))
 
@@ -34,6 +35,7 @@
   (let [{:keys [map-fn join-str wrap-parens]} (merge default-opts (apply hash-map opt-kvs))
         clauses (map to-clause clauses)
         text (->> clauses
+               (remove nil?)
                (map #(map-fn (:text %)))
                (string/join join-str))]
     {:text (if wrap-parens (str "(" text ")") text)
