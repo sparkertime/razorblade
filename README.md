@@ -67,7 +67,7 @@ In your project.clj:
 ```
 
 ```clj
-; strings and user input should go through the field function
+; string literals and user input must go through the field function, most other literals can
 (select :*
   (from :dingos)
   (where (op/and
@@ -111,7 +111,9 @@ In your project.clj:
 (exec (select :name (from :dingos)))
 
 ; and of course you can always pass in your own. The above is equivalent to
-(exec {:text "select name from from dingos" :params []})
+(exec {:text "select name from dingos" :params []})
+; and
+(exec "select name from dingos")
 ```
 
 ```clj
@@ -125,6 +127,9 @@ In your project.clj:
                    :join-str ""))
 ; (cast :foo "int") yields
 {:text "CAST(foo AS int)" :params []}
+
+; Any function that returns a map containing :text and :params will work
+; but using combine-clauses will translate most arguments into their appropriate representation
 ```
 
 ```clj
