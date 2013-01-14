@@ -1,6 +1,6 @@
 # razorblade
 
-Build Status (via Travis CI): [![Build Status](https://secure.travis-ci.org/citizenparker/razorblade.png?branch=master)](http://travis-ci.org/citizenparker/razorblade)
+[![Build Status](https://secure.travis-ci.org/citizenparker/razorblade.png)](http://travis-ci.org/citizenparker/razorblade)
 
 A SQL library for Clojure designed to be primitive yet composable. As with any sharp object, take care not to cut yourself during use.
 
