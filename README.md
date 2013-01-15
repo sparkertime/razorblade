@@ -193,8 +193,6 @@ In your project.clj:
  :params []}
 ```
 
-```
-
 ## License
 
 Copyright © 2013 Scott Parker
