@@ -1,5 +1,5 @@
 (ns razorblade.core
-  (:require [clojure.java.jdbc :as sql]
+  (:require [clojure.java.jdbc :as jdbc]
             [clojure.string :as string]))
 
 (def ^{:dynamic true} *db* "postgres://localhost/razor-test")
@@ -47,6 +47,19 @@
                                (combine-clauses fields :join-str ", ")
                                clauses]))))
 
+(defn insert-into [table fields select-clause]
+  (combine-clauses ["insert into" table fields select-clause]))
+
+(defn update [table & clauses]
+  (combine-clauses (concat ["update" table] clauses)))
+
+(defn delete [& clauses]
+  (combine-clauses (cons "delete" clauses)))
+
+(defn set-fields [& clauses]
+  (combine-clauses ["set"
+                    (combine-clauses clauses :join-str ", ")]))
+
 (defn from [clause]
   (combine-clauses ["from" clause]))
 
@@ -61,8 +74,21 @@
     (map to-clause)
     (map #(update-in % [:text] (partial str (name prefix) ".")))))
 
-(defn exec [query]
-  (clojure.java.jdbc/with-connection *db*
-    (clojure.java.jdbc/with-query-results rows
-      (vec (cons (:text query) (:params query)))
-      (doall rows))))
+(defn exec [q]
+  (let [q (to-clause q)])
+    (jdbc/with-connection *db*
+      (first (jdbc/do-prepared
+        (:text q)
+        (:params q)))))
+
+(defn query [q]
+  (let [q (to-clause q)])
+    (jdbc/with-connection *db*
+      (jdbc/with-query-results rows
+        (vec (cons (:text q) (:params q)))
+        (doall rows))))
+
+(defn insert [table & records]
+  (let [table (fieldify table)]
+    (jdbc/with-connection *db*
+      (apply jdbc/insert-records table records))))

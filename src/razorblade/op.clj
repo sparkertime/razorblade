@@ -19,10 +19,20 @@
     [clause1 clause2]
     :join-str " > "))
 
+(defn < [clause1 clause2]
+  (combine-clauses
+    [clause1 clause2]
+    :join-str " < "))
+
 (defn = [clause1 clause2]
   (combine-clauses
     [clause1 clause2]
     :join-str " = "))
+
+(defn <> [clause1 clause2]
+  (combine-clauses
+    [clause1 clause2]
+    :join-str " <> "))
 
 (defn + [clause1 clause2]
   (combine-clauses
@@ -43,3 +53,11 @@
   (combine-clauses
     [clause1 clause2]
     :join-str " not in "))
+
+(defn is-null [clause]
+  (combine-clauses
+    [clause "is null"]))
+
+(defn is-not-null [clause]
+  (combine-clauses
+    [clause "is not null"]))

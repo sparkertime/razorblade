@@ -23,6 +23,11 @@ Razorblade _may not_ be for you if you experience any of the following symptoms:
 * You don't know SQL that well or desire a non-SQL representation of querying (use Korma or ClojureQL respectively)
 * You want a library that can intelligently build SQL based on schema / entity relationships. (use Korma)
 
+## Remaining Items for a beta release
+* Support limit, order, group by, having operations
+* Provide for object sanitization somehow. Thinking something like ```as-fields [args] body``` to avoid ```(field ...)``` calls
+* Provide Korma-style before/after transformation examples (should stay separate from exec/query calls though. Thinking another ```with-*``` wrapper
+
 ## Usage
 
 Not recommended just yet. The bold may proceed, however.
@@ -37,7 +42,7 @@ In your project.clj:
 ```clj
 ; all examples below assume a setup like so
 (ns my.cool.app
-  (:use [razorblade.core :only [select from where join prefix combine-clauses]])
+  (:use [razorblade.core :only [select update delete insert insert-into set-fields from where join prefix combine-clauses]])
   (:require [razorblade.op :as op]))
 ```
 
@@ -108,12 +113,47 @@ In your project.clj:
 
 ```clj
 ; executing queries is straightforward too
-(exec (select :name (from :dingos)))
+(query (select :name (from :dingos)))
 
 ; and of course you can always pass in your own. The above is equivalent to
-(exec {:text "select name from dingos" :params []})
+(query {:text "select name from dingos" :params []})
 ; and
-(exec "select name from dingos")
+(query "select name from dingos")
+```
+
+```clj
+; of course, you can delete
+; however, anything that doesn't return records should use (exec ...), not (query ...)
+(delete (from :living-dingos)
+  (where
+    (op/or
+      (op/<> :status (field "living"))
+      (op/< :deceased-at "now()"))))
+; yields
+{:text "delete from living_dingos where (status <> ?) OR (deceased_at < now())" :params ["living"]}
+
+; you can update too. Note that a set statement is (set-fields ...) so as not to conflict with core/set
+(update :living-dingos
+  (set-fields (op/= :status (field "deceased"))
+              (op/= :deceased-by-id 4))
+  (where (op/is-not-null :deceased-at)))
+; yields
+{:text "update living_dingos set status = ?, deceased_by_id = 4 where deceased_at is not null" :params ["deceased"]}
+```
+
+```clj
+; inserts are more-or-less the same as in clojure.java.jdbc, although table names go through clause transformation
+(insert :living-dingos
+  {:name "Raspberry" :spottings 0}
+  {:name "Robert"    :spottings 5})
+
+; insert-into is a normal statement though
+(insert-into :living_dingos [:name :spottings]
+  (select [:name 0]
+    (from :dingos)
+    (where (op/<> :status (field "deceased")))))
+;yields
+{:text "insert into living_dingos (name,spottings) select name, 0 from dingos where status <> ?" :params []}
 ```
 
 ```clj
@@ -153,10 +193,7 @@ In your project.clj:
  :params []}
 ```
 
-## Todo
-* Support Update, Delete queries
-* Provide for object sanitization in style of ```as-fields [args] body``` to avoid ```(field ...)``` calls
-* Provide Korma-style before/after transformation examples (should stay separate from exec calls though. Thinking another ```with-*``` wrapper
+```
 
 ## License
 
