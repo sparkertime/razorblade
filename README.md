@@ -122,6 +122,18 @@ In your project.clj:
 ```
 
 ```clj
+; there are two ways to configure Razorblade. Both use the same configuration as clojure.java.jdbc - http://clojure.github.com/java.jdbc/#clojure.java.jdbc/with-connection
+; Traditional binding
+(binding [razorblade.core/*db-spec* "postgres://localhost/my-db"]
+  (query "select name from dingos"))
+
+; You can also set a default if you'd rather
+(razorblade.core/set-default-db-spec "postgres://localhost/my-db")
+
+; *db-spec* always overrides the default when it is bound
+```
+
+```clj
 ; of course, you can delete
 ; however, anything that doesn't return records should use (exec ...), not (query ...)
 (delete (from :living-dingos)

@@ -2,7 +2,15 @@
   (:require [clojure.java.jdbc :as jdbc]
             [clojure.string :as string]))
 
-(def ^{:dynamic true} *db* "postgres://localhost/razor-test")
+(defonce ^{:private true} default-db-spec (atom nil))
+
+(defn set-default-db-spec [db-spec]
+  (reset! default-db-spec db-spec))
+
+(def ^{:dynamic true} *db-spec* nil)
+
+(defn current-db-spec []
+  (or *db-spec* @default-db-spec))
 
 (declare combine-clauses)
 
@@ -76,19 +84,19 @@
 
 (defn exec [q]
   (let [q (to-clause q)])
-    (jdbc/with-connection *db*
+    (jdbc/with-connection (current-db-spec)
       (first (jdbc/do-prepared
         (:text q)
         (:params q)))))
 
 (defn query [q]
   (let [q (to-clause q)])
-    (jdbc/with-connection *db*
+    (jdbc/with-connection (current-db-spec)
       (jdbc/with-query-results rows
         (vec (cons (:text q) (:params q)))
         (doall rows))))
 
 (defn insert [table & records]
   (let [table (fieldify table)]
-    (jdbc/with-connection *db*
+    (jdbc/with-connection (current-db-spec)
       (apply jdbc/insert-records table records))))
